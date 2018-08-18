@@ -1,7 +1,5 @@
 import re
-
-class UserNotValidException(Exception):
-  pass
+from app.exception import UserNotValidException
 
 class User(object):
     def __init__(self,username=None,phones=None,index=None):
@@ -11,6 +9,14 @@ class User(object):
       if not self.validate_user():
         raise UserNotValidException()
 
+    @staticmethod
+    def valid_phone(phone):
+      if not isinstance(phone,basestring):
+        return False
+      if phone is None or not re.match(r"1\d{10}",phone):
+        return False      
+      return True
+
     def validate_user(self):
       if self.username == None:
         return False  
@@ -19,7 +25,8 @@ class User(object):
       if not isinstance(self.index,int):
         return False
       for phone in self.phones:
-        if phone is None or not re.match(r"1\d{10}",phone):
+        isValidPhone = self.valid_phone(phone)
+        if isValidPhone == False:
           return False
       return True
 
@@ -27,7 +34,7 @@ class User(object):
       return {
         "index":self.index,
         "username":self.username,
-        "phone":self.phones
+        "phones":self.phones
       }
     def __repr__(self):
       return "<Username:{0},Phone:{1}>".format(self.username,",".join(self.phones))

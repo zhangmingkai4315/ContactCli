@@ -1,6 +1,6 @@
 import unittest
-from app.user import User,UserNotValidException
-
+from app.user import User
+from app.exception import UserNotValidException
 
 class TestUserClass(unittest.TestCase):
   def test_init_user_with_correct_info(self):
@@ -38,5 +38,5 @@ class TestUserClass(unittest.TestCase):
     self.assertDictEqual(user_object,{
       "index":-1,
       "username":user.username,
-      "phone":user.phones
+      "phones":user.phones
     })    

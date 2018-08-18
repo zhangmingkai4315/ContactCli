@@ -1,42 +1,38 @@
 import os
 import json
 import app.config as Config
-from app.user import UserNotValidException,User
+from app.user import User
+from app.exception import *
 import re
-
-class ConfigFileParseException(Exception):
-    pass
-class DuplicateUserException(Exception):
-    pass
-class IndexOutofRangeException(Exception):
-    pass
-class IndexNotGivenException(Exception):
-    pass
 
 class ContactManager(object):
     def __init__(self, db_file=Config.DEFAULT_DB_FILE):
+        self.db_file = db_file
+
+    def __enter__(self):
         try:
-            self.db_handler = self.get_file_handler(db_file)
-            self.contacts = json.load(self.db_handler)
-            self.status = Config.READ_DB_FILE_SUCCESS
+            if not os.path.isfile(self.db_file):
+                self.contacts = {
+                    "version": Config.DB_VERSION,
+                    "data": []
+                }
+            else:
+                db_handler = file(self.db_file, "r")
+                self.contacts = json.load(db_handler)
+                db_handler.close()
         except Exception as e:
             raise ConfigFileParseException(e.message)
-
-    def get_file_handler(self, db_file):
-        if not os.path.isfile(db_file):
-            db_handler = file(db_file, "w+")
-            init_data = {
-                "version": Config.DB_VERSION,
-                "data": []
-            }
-            db_handler.write(json.dumps(init_data))
-            db_handler.seek(0)
-        else:
-            db_handler = file(db_file, "r+")
-        return db_handler
+        return self
+    def __exit__(self,exc_type, exc_val, exc_tb):
+        db_handler = file(self.db_file,"w")
+        json.dump(self.contacts,db_handler)
+        db_handler.close()
 
     def version(self):
         return self.contacts['version']
+
+    def size(self):
+        return len(self.contacts["data"])
 
     def list_contacts(self):
         return self.contacts["data"]
@@ -48,22 +44,20 @@ class ContactManager(object):
                 matches.append(contact)
         return matches
 
-    def insert_contact(self,user):
+    def new_contact(self,user):
         if not isinstance(user, User):
             raise UserNotValidException()
-        matchers = self.search_contact(user.username)
-        if len(matchers) == 0:
-            user.index = len(self.contacts["data"])
-            self.contacts["data"].append(user.to_object())
-        else:
-            raise DuplicateUserException()
+        user.index = len(self.contacts["data"])
+        self.contacts["data"].append(user.to_object())
+        return self
     
     def delete_user(self,index=None):
         if index == None:
             raise IndexNotGivenException()
         if index<0 or index>=len(self.contacts["data"]):
             raise IndexOutofRangeException()
-        return self.contacts["data"].pop(index)
+        self.contacts["data"].pop(index)
+        return self
     
     def update_contact(self,index=None,user=None):
         if index == None:
@@ -73,10 +67,29 @@ class ContactManager(object):
         if User == None or not isinstance(user,User):
             raise UserNotValidException()
         self.contacts["data"][index] = user.to_object()
+        return self
+    
+    def append_new_phone_with_user_index(self, index=None,phone=None):
+        if index == None:
+            raise IndexNotGivenException()
+        if index<0 or index>=len(self.contacts["data"]):
+            raise IndexOutofRangeException()
+        if not User.valid_phone(phone):
+            raise PhoneNotValidException()
+        print( self.contacts["data"][index] )
+        if phone not in self.contacts["data"][index]["phones"]:
+            self.contacts["data"][index]["phones"].append(phone)
+        return self
 
-    def close(self):
-        json.dump(self.contacts,self.db_handler)
-        self.db_handler.close()
+    def delete_phone_with_user_index(self, index=None,phone=None):
+        if index == None:
+            raise IndexNotGivenException()
+        if index<0 or index>=len(self.contacts["data"]):
+            raise IndexOutofRangeException()
+        if phone in self.contacts["data"][index]["phones"]:
+            self.contacts["data"][index]["phones"].remove(phone)
+        return self
+
     
         
 
