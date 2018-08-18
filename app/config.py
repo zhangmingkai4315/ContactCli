@@ -1,4 +1,4 @@
-DEFAULT_DB_FILE = "contact.db"
+DEFAULT_DB_FILE = "db.json"
 DB_VERSION = "v0.1"
 
 READ_DB_FILE_SUCCESS = 0

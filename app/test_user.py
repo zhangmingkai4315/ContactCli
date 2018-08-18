@@ -39,4 +39,16 @@ class TestUserClass(unittest.TestCase):
       "index":-1,
       "username":user.username,
       "phones":user.phones
-    })    
+    })
+  def test_valid_phone(self):
+    phones = [
+      ["13800000000",True],
+      ["138000000002",False],
+      ["138",False],
+      ["Hello",False],
+      ["1234None",False],
+      [None,False],
+      [123,False],
+      [13800000000,False]]
+    for phone in phones:
+      self.assertEqual(User.valid_phone(phone[0]),phone[1])

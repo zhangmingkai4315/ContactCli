@@ -114,6 +114,17 @@ class TestContactManager(unittest.TestCase):
             with self.assertRaises(IndexNotGivenException):
                 _ = cm.delete_user()
 
+    def test_delete_all_contacts(self):
+        with ContactManager() as cm:
+            user0 = User("Mike", "13800000000")
+            user1 = User("Mike", "13800000001")
+            cm.new_contact(user0).new_contact(user1)
+            self.assertEqual(cm.size(),2)
+        with ContactManager() as cm:
+            cm.delete_all_contacts()
+            self.assertEqual(cm.size(),0)
+
+
     def test_update_user_with_no_index(self):
         with ContactManager() as cm:
             user0 = User("Mike", "13800000000")

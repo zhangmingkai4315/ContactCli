@@ -13,7 +13,7 @@ class User(object):
     def valid_phone(phone):
       if not isinstance(phone,basestring):
         return False
-      if phone is None or not re.match(r"1\d{10}",phone):
+      if not re.match(r"^1\d{10}$",phone):
         return False      
       return True
 

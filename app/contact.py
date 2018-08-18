@@ -33,6 +33,9 @@ class ContactManager(object):
 
     def size(self):
         return len(self.contacts["data"])
+    
+    def show_contact(self,contact):
+        return 'index:{0}\nName:{1} Phone:[{2}]\n'.format(contact["index"],contact["username"],",".join(contact["phones"]))
 
     def list_contacts(self):
         return self.contacts["data"]
@@ -40,7 +43,7 @@ class ContactManager(object):
     def search_contact(self,name):
         matches = []
         for contact in self.contacts["data"]:
-            if contact["username"].lower() == (name.lower()):
+            if (name.lower()) in contact["username"].lower():
                 matches.append(contact)
         return matches
 
@@ -59,6 +62,10 @@ class ContactManager(object):
         self.contacts["data"].pop(index)
         return self
     
+    def delete_all_contacts(self):
+        self.contacts["data"] = []
+        return self
+
     def update_contact(self,index=None,user=None):
         if index == None:
             raise IndexNotGivenException()
